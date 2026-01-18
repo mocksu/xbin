@@ -1,0 +1,5 @@
+#!/usr/bin/perl -w
+
+use Util;
+
+Util::run("java com.vidagen.geneticTest.TestCFG @ARGV", 1);

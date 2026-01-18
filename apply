@@ -1,0 +1,27 @@
+#!/usr/bin/perl
+
+$num = (@ARGV);
+print "num = $num\n";
+
+if ($num < 2) {
+	print "Usage:\n";
+	print "apply <command> <RE>\n";
+	print "For example,\n";
+	print "apply ls *.txt\n";
+	print "apply dos2unix *.java\n";
+	
+	exit(1);
+}
+
+my ($command) = $ARGV[0];
+
+$index = 1;
+
+while($index < $num) {
+    $file = $ARGV[$index];
+#	print "$command $file\n";
+	
+	`$command $file`;
+
+	$index++;
+}

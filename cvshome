@@ -1,0 +1,5 @@
+#!/bin/tcsh
+
+setenv CVS_RSH ssh
+setenv CVSROOT :ext:moxu@207.172.69.34:/usr/local/repository
+cvs $*

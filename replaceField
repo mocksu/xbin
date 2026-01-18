@@ -1,0 +1,32 @@
+#!/usr/bin/perl -w
+
+# replace a regular expression string with another string
+
+if(scalar(@ARGV) != 5) {
+    print "\nUsage: ~ <input.csv> <field_no> <regular_expression> <replace_string> <out.csv>\n\n";
+    exit(1);
+}
+
+use Flat;
+
+my($in) = Flat->new1($ARGV[0]);
+my($fldIndex) = $ARGV[1];
+my($restr) = $ARGV[2]; # the regular expression string to be replaced
+my($str) = $ARGV[3]; # the string to replace $restr
+my($out) = $ARGV[4];
+
+my(@fldNames) = $in->getFieldNames();
+my(@data) = $in->getDataArray();
+
+open OUT, "+>$out" || die $!;
+
+# print field names
+print OUT Flat::dataRowToString(@fldNames), "\n";
+
+for(my($i) = 0; $i < scalar(@data); $i++) {
+    $data[$i][$fldIndex] =~ s/$restr/$str/;
+
+    print OUT Flat::dataRowToString(@{$data[$i]}), "\n";
+}
+
+close OUT;

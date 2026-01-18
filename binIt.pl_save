@@ -1,0 +1,102 @@
+#!/usr/bin/perl -w
+
+# bin the input data file on the specified field, sum or concatenate other fields
+if(scalar(@ARGV) != 3) {
+    print "Usage: ~ <input.csv> <fld_no> <bin_size>\n";
+    print "input.csv\tthe sorted (low => high) input data file to be binned\n";
+    print "fld_no\tthe number of the field (0 based) to be binned\n";
+    print "bin_size\tthe size of bin of the specified field\n";
+    print "with_header\twhether the first line of \"input.csv\" contains field names. 1 => yes, 0 => no\n";
+    exit(1);
+}
+
+my($infile) = $ARGV[0];
+my($fldNo) = $ARGV[1];
+my($binSize) = $ARGV[2];
+
+use Flat;
+use math;
+
+if(math::util::NaN($fldNo) || math::util::NaN($binSize)) {
+    die "All should be numeirc: fldNo = $fldNo, binSize = $binSize\n";
+}
+
+my($file) = Flat->new1($infile);
+my(@fldNames) = $file->getFieldNames();
+my($numOfFlds) = $file->getNumOfColumns();
+my(@data) = $file->getDataArray();
+my($numOfRows) = scalar(@data);
+my($min) = $data[0][$fldNo];
+my($max) = $data[$numOfRows - 1][$fldNo];
+
+if(scalar(@fldNames) > 0) {
+    print "$fldNames[0]";
+
+    for(my($j) = 1; $j < $numOfFlds; $j++) {
+	print "\t$fldNames[$j]";
+    }
+
+    print "\n";
+}
+
+# check which field is numeric or not
+my(@fldIsNumeric);
+
+for(my($i) = 0; $i < $numOfFlds; $i++) {
+    $fldIsNumeric[$i] = 1;
+
+    for(my($j) = 0; $j < scalar(@data); $j++) {
+	if($data[$j][$i] && math::util::NaN($data[$j][$i])) {
+	    $fldIsNumeric[$i] = 0;
+	    last;
+	}
+    }
+}
+
+my(@binRow); # binned row
+my($curRowInd) = 0; # current row index
+my($binNo) = 0;
+
+for(my($i) = 0; $i < scalar(@data); $i++) {
+#    print "i = $i: $data[$i][$fldNo], binSum = $binRow[1]\n";
+    
+    if($data[$i][$fldNo] < $min + $binSize * ($binNo + 1) - 1) { # still current bin
+    }
+    else { # a new bin started
+#	print "--------- end of bin -------------\n";
+
+	$binRow[$fldNo] = $min + $binSize * $binNo;
+	_printBinRow(\@binRow);	
+	
+	$binNo++;
+    }
+
+    for(my($j) = 0; $j < $numOfFlds; $j++) {
+	if($fldIsNumeric[$j]) {
+	    $binRow[$j] += $data[$i][$j];
+	}
+	else {
+	    $binRow[$j] .= ",".$data[$i][$j];
+	}
+    }
+}
+
+$binRow[$fldNo] = $data[scalar(@data) - 1][$fldNo];
+
+_printBinRow(\@binRow);
+
+sub _printBinRow {
+    my($row) = @_;
+    
+    my(@binRow) = @{$row};
+
+    print "$binRow[0]";
+
+    for(my($j) = 1; $j < $numOfFlds; $j++) {
+	print "\t$binRow[$j]";
+    }
+    
+    print "\n";
+    
+    @{$row} = ();
+}

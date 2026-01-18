@@ -1,0 +1,63 @@
+#!/usr/bin/perl
+
+# replace a regular expression string with another string
+
+use Getopt::Std;
+
+my(%options);
+
+if(scalar(@ARGV) < 3) {
+    print "use:\n\n".
+	"replace <regular_expression> <replace_string> <file1> <file2> ... <filen>\n\n".
+	"where\n\n".
+	"\tregular_expression\tthe regular expression to be replaced\n".
+	"\treplace_string\tthe new string to place the regular expression\n".
+	"\tfile_name\tthe name of the file to be processed\n\n".
+	"e.g.\n\t~ moxu mox */*.java\n\n".
+	"\twhich replaces every instance of 'moxu' with 'mox' for all */*.java\n\n";
+
+    exit(1);    
+}
+
+my($restr) = shift @ARGV; # the regular expression string to be replaced
+my($str) = shift @ARGV; # the string to replace $restr
+my(@fnames) = @ARGV;
+
+foreach $fname (@fnames) {
+    if(-f $fname) {
+	print "modifying file $fname...\n";
+	replaceInFile($fname);
+    }
+}
+
+print "Done\n\n";
+
+sub replaceInFile {
+    my($fname) = @_;
+
+    my($tfname) = "_tmp.txt";
+
+    `mv $fname $tfname`;
+
+    open TMP, "<$tfname" || die "Cannot open tmp file";
+
+# read the whole file
+    my($text) = '';
+
+    while($line = <TMP>) {
+	$text .= $line;
+    }
+
+# close the file
+    close TMP;
+    
+    $text =~ s/$restr/$str/g;
+    
+    open TMP, "+>$fname" || die "Cannot create '$fname'\n";
+
+    print TMP $text;
+
+    close TMP;
+
+    `rm -rf $tfname`;
+}

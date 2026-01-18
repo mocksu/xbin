@@ -1,0 +1,34 @@
+#!/usr/bin/perl -w
+
+if(scalar(@ARGV) < 3) {
+    print "Usage: ~ <original> <renamed> <file1> ... <fileN>\n";
+    exit(1);
+}
+
+use Util;
+
+my $o = shift @ARGV;
+my $r = shift @ARGV;
+
+my @files = ();
+
+for(my($i) = 0; $i < scalar(@ARGV); $i++) {
+  my @_files = <$ARGV[$i]>;
+
+  push @files, @_files;
+}
+
+foreach $f (@files) {
+  my $newF = $f;
+
+  $newF =~ s/$o/$r/;
+
+  # escape (, )
+   $f =~ s/\(/\\\(/g;
+   $f =~ s/\)/\\\)/g;
+
+   $r =~ s/\(/\\\(/g;
+  $r =~ s/\)/\\\)/g;
+
+  Util::run("mv $f $newF", 1);
+}

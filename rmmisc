@@ -1,0 +1,47 @@
+#!/usr/bin/perl
+
+my(@dirs) = @ARGV;
+
+if(scalar(@dirs) == 0) {
+    @dirs= (".");
+}
+
+foreach $d (@dirs) {
+    rmDir($d);
+}
+
+sub rmDir {
+    my($dir) = @_;
+
+    `find $dir -name "*~" > rmx.txt`;
+    
+    &rmList("rmx.txt");
+    
+    `find $dir -name "#*" > rmx.txt`;
+    
+    &rmList("rmx.txt");
+    
+    `rm -rf rmx.txt`;
+
+    `popd`;
+}
+
+sub rmList {
+	my($fileList) = @_;
+
+	open JUNKLIST, "<$fileList" || die "cannot open rmx.txt\n";
+
+	while($line = <JUNKLIST>) {
+		chomp($line);
+
+		if(-f $line) {
+			print "remove file \"$line\"\n";
+			print `rm -rf $line`;		
+		}
+		else {
+			print "keep file \"$line\"\n";
+		}
+	}
+
+	close JUNKLIST;		
+}
